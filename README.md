@@ -15,7 +15,7 @@ This is copy of fully functioning module from Drupal module repository. I have c
 * Install as usual
 * Set 'scale' effect for 'thumbnail image style' to 256x144 (upscaling allowed)
 * Set 'blurred' effect for 'thumbnail image style' to 256x144
-* Flush 'thumbnail image style' images (drush image-flush thumbnail)
+* Flush 'thumbnail image style' images (`drush image-flush thumbnail`)
  
 ## Credits
 * [Jasom Dotnet](https://www.drupal.org/user/290309)
