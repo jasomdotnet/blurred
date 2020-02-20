@@ -1,0 +1,5 @@
+name = Blurred
+description = Post scale blurred background effect
+core = 7.x
+package = Media
+dependencies[] = image

@@ -1,0 +1,75 @@
+<?php
+function blurred_image_effect_info() {
+    $effects = array();
+    $effects['advance_resize'] = array(
+        'label' => t('Blurred background'),
+        'help' => t('Creates image with fixed proportion and blurred background.'),
+        'effect callback' => 'blurred_effect',
+        'dimensions callback' => 'image_resize_dimensions',
+        'form callback' => 'image_resize_form',
+        'summary theme' => 'image_resize_summary',
+    );
+    return $effects;
+}
+
+function blurred_effect(&$image, $data) {
+    if (!blurred_background($image, $data['width'], $data['height'])) {
+        watchdog('image', 'Image resize within Blurred module failed using the %toolkit toolkit on %path (%mimetype, %dimensions)', array('%toolkit' => $image->toolkit, '%path' => $image->source, '%mimetype' => $image->info['mime_type'], '%dimensions' => $image->info['width'] . 'x' . $image->info['height']), WATCHDOG_ERROR);
+        return FALSE;
+    }
+    return TRUE;
+}
+
+function blurred_background(stdClass $image, $width, $height) {
+    $src_w = $image->info['width'];
+    $src_h = $image->info['height'];
+    $src_image = $image->resource;
+
+    $src_aratio = round($src_w / $src_h, 7);
+    $dst_aratio = round($width / $height, 7);
+    if ($dst_aratio != $src_aratio) {
+
+        if ($dst_aratio > $src_aratio) {
+            // image is a portrait or taller then required
+            $tmp_dst_w = $width;
+            $tmp_dst_h = round(round($width / $src_w, 7) * $height, 0, PHP_ROUND_HALF_UP) + 1;
+            $src_h = $height;
+            $src_x = 0;
+            $src_y = round(($tmp_dst_h - $height) / 2);
+            $dst_x = round(($width - $src_w) / 2, 0, PHP_ROUND_HALF_DOWN);
+            $dst_y = 0;
+        } else {
+            // image is a landscape or wider then required
+            $tmp_dst_w = round(round($height / $src_h, 7) * $width, 0, PHP_ROUND_HALF_UP) + 1;
+            $tmp_dst_h = $height;
+            $src_w = $width;
+            $src_x = round(($tmp_dst_w - $width) / 2, 0);
+            $src_y = 0;
+            $dst_x = 0;
+            $dst_y = round(($height - $src_h) / 2, 0, PHP_ROUND_HALF_DOWN);
+        }
+        // creates empty 'background image' layer
+        $blurred_bg = imagecreatetruecolor($tmp_dst_w, $tmp_dst_h);
+        // fills empty 'background image' layer with the resized source image
+        imagecopyresampled($blurred_bg, $src_image, 0, 0, 0, 0, $tmp_dst_w, $tmp_dst_h, $src_w, $src_h);
+        // applies blur filters 'background image' layer
+        for ($i = 0; $i < 25; $i++) {
+            if ($i % 10 == 0) {//each 10th time apply 'IMG_FILTER_SMOOTH' with 'level of smoothness' set to -7
+                imagefilter($blurred_bg, IMG_FILTER_SMOOTH, -7);
+            }
+            imagefilter($blurred_bg, IMG_FILTER_GAUSSIAN_BLUR);
+        }
+        // creates empty 'destination image' layer
+        $dst_image = imagecreatetruecolor($width, $height);
+        // merges 'destination image' layer with blurred 'background image' layer
+        imagecopyresampled($dst_image, $blurred_bg, 0, 0, $src_x, $src_y, $width, $height, $width, $height);
+        // merges 'destination image' layer with 'source image'
+        imagecopyresampled($dst_image, $src_image, $dst_x, $dst_y, 0, 0, $src_w, $src_h, $src_w, $src_h);
+        $image->resource = $dst_image;
+        $image->info['width'] = $width;
+        $image->info['height'] = $height;
+        imagedestroy($src_image);
+        imagedestroy($blurred_bg);
+    }
+    return TRUE;
+}
