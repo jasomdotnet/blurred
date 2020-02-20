@@ -1,5 +1,7 @@
 # blurred
-Module for Drupal 7 blurring background for uploaded images while keeps desired aspect ratio. Creates thumbnails for portrait (vertical) pictures as if they are landscape (vertical) and vice versa. This is copy of fully functioning module from Drupal module repository. I created it back in 2016 because native Drupal 7 mechanism around thumnails didn't fit my needs.
+Module for Drupal 7 blurring background for uploaded images while keeps desired aspect ratio. Creates thumbnails for portrait (vertical) pictures as if they were landscape (vertical) and vice versa. 
+
+This is copy of fully functioning module from Drupal module repository. I have created it back in 2016 because native Drupal 7 mechanism around thumnails didn't fit my needs.
 
 ![Blurred background module for Drupal 7](https://www.drupal.org/files/project-images/blurred.jpg)
 
